@@ -1,0 +1,822 @@
+
+R version 3.6.0 (2019-04-26) -- "Planting of a Tree"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Registered S3 methods overwritten by 'ggplot2':
+  method         from 
+  [.quosures     rlang
+  c.quosures     rlang
+  print.quosures rlang
+[Previously saved workspace restored]
+
+> library(data.table)
+> library(scales)
+> library(stringr)
+> library(quadprog)
+> library(e1071)
+> library(ggplot2)
+> library(MASS)
+> library(gridExtra)
+> library(quantreg)
+Loading required package: SparseM
+
+Attaching package: ‘SparseM’
+
+The following object is masked from ‘package:base’:
+
+    backsolve
+
+> setwd("~/Hutch-Research/R_batch2")
+> #source('Expr_Methy_Data_SKCM.R')
+> 
+> use_abs_eta = TRUE
+> purity_correction =  TRUE
+> discard_high_purity = FALSE
+> discard_mast_cells = FALSE 
+> testalgorithm = FALSE
+> printplot = TRUE
+> aber = TRUE
+> 
+> #-----------------------------------------------------------
+> # Compare absolute purity and estiamted purity
+> #-----------------------------------------------------------
+> if(1<0){
++ print(cor(abs_purity$absolute_extract_purity,est_purity$AscatPurity))
++ pdf("../../../../figures/abs_vs_est_purity.pdf", width = 13.5, height = 6)
++ eta_plot = data.frame(cbind(abs_purity$absolute_extract_purity,est_purity$AscatPurity))
++ colnames(eta_plot) = c('abs_purity','inferred_purity')
++ etascatter <- ggplot(data = eta_plot, aes(x=abs_purity, y=inferred_purity)) + xlim(0,1) + ylim(0,1) +
++                      geom_point() + geom_abline(intercept = 0,slope = 1)
++ print(etascatter)
++ dev.off()
++ }
+> 
+> #-----------------------------------------------------------
+> # Compare results with different methods and with expression data
+> #-----------------------------------------------------------
+> #Y = 2^Y/(2^Y+1)
+> 
+> if(use_abs_eta){
++   print("Absolute Purity")
++   setwd("~/Hutch-Research/R_batch2")
++   source("COAD.R")
++   eta = eta_abs[which(colnames(ys) %in% rownames(deconv_expr))]
++   Y   = ys[,intersect(colnames(ys),rownames(deconv_expr))]
++   ref = mu[rownames(Y),]
++   #printplot = FALSE
++   if(purity_correction){
++     temp <- rownames(deconv_expr)
++     deconv_expr <- diag(1-eta) %*% deconv_expr
++     rownames(deconv_expr) <- temp
++   }
++   ref[ref < 0.05] = 0.05
++   ref[ref > 0.95] = 0.95
++   mu = ref
++   #penalty = dim(Y)[1]*(10^seq(-2,1,1)) 
++   penalty = 1000
++ }
+[1] "Absolute Purity"
+[1] 175   7
+> 
+> if(discard_high_purity){
++   high = which(eta > 0.8)
++   Y = Y[,-high]
++   eta = eta[-high]
++   deconv_expr = deconv_expr[-high,]
++ }
+> 
+> if(testalgorithm){
++   print("test algorithm")
++   Y = ref %*% t(deconv_expr[,1:7]) + 
++        matrix(rnorm(nrow(Y)*ncol(Y),0,sd=0.05),nrow = nrow(Y), ncol = ncol(Y))
++   eta = rep(0.001,ncol(Y))
++ }
+> 
+> if(discard_mast_cells){
++   cat('dim of Y before discarding other cells', dim(Y))
++   print(summary(other))
++   high = which(other > quantile(other,0.3))
++   cat('30% quantile of other cell types', quantile(other,0.3))
++   cat('length of high: ', length(high))
++   Y = Y[,-high]
++   eta = eta[-high]
++   deconv_expr = deconv_expr[-high,]
++   print(dim(Y))
++ }
+> 
+> eta[eta > 0.99] = 0.99
+> 
+> print(dim(ref))
+[1] 966   7
+> methods = c("WeightEM","LaplaceEM","HeteroEM","OriEM","svr","ls","rls","qp")
+> rho     = array(data = NA, dim = c(ncol(Y),length(cellTypes),length(methods)),
++                 dimnames = list(1:ncol(Y),cellTypes,methods))
+> alpha = rep(1/length(cellTypes),length(cellTypes))
+> simsize = ncol(Y)
+> 
+>   temp       = runif(simsize * length(cellTypes)) * 0.2 -0.1
+>   rho_init   = matrix(temp,ncol = length(cellTypes))
+>   nu0_init   = runif(nrow(Y))
+>   sigma_c_init = 0.1
+>   lambda_init  = 2
+> 
+>   for(j in 1:ncol(Y)){
++     if(j %% 50 == 0){ cat(j, date(), "\n") }
++     y    = Y[,j]
++     X    = as.data.frame(mu)
++     Xmat = mu
++     
++     svrmodel        = svm(y ~ ., data = X, kernel = 'linear', cost = c(1,sqrt(10),10,10^{3/2},100),cross = 5)
++     temp            = (t(svrmodel$coefs) %*% svrmodel$SV)
++     temp[temp < 0]  = 0
++     rho[j,,'svr']   = (1-eta[j])*temp/sum(temp)
++     
++     temp            = lm(y ~ .-1,data = X)$coefficients
++     temp[temp < 0]  = 0
++     rho[j,,'ls']    = (1-eta[j])*temp/sum(temp)
++     
++     temp            = rlm(y ~ .-1,data = X)$coefficients
++     temp[temp < 0]  = 0
++     rho[j,,'rls']   = (1-eta[j])*temp/sum(temp)
++     
++     A = rbind(diag(rep(1,length(cellTypes))),rep(-1,length(cellTypes)))
++     b = c(rep(0,length(cellTypes)),-1+eta[j])
++     D = t(Xmat) %*% Xmat
++     d = t(t(Xmat) %*% y)
++     rho[j,,'qp']   = (solve.QP(D,d,t(A),b)$solution)
++   }
+50 Sun Oct 20 16:31:39 2019 
+100 Sun Oct 20 16:31:55 2019 
+150 Sun Oct 20 16:32:10 2019 
+There were 50 or more warnings (use warnings() to see the first 50)
+>   
+>   rho_init = rho[,,'ls']
+>   K = nrow(Y)
+>   Y_ab     = Y - mu %*% t(rho_init)
+>     if(aber){
++     for(k in 1:K){
++       nu0_init[k] = min(1,max(0,sum(eta * Y_ab[k,])/sum( eta^2)))
++     }
++     }
+> 
+> try({
++   hundrediter_laplace = deconvEM_laplace(Y,eta,mu,aber = aber, V='c', weight = matrix(1,5,5),
++                                 0.5,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
++                                 nu = penalty, maxiter = 100, verbose = TRUE)
++   rho[,,'LaplaceEM'] = hundrediter_laplace$rho
++   sigma_c_est_laplace   = hundrediter_laplace$sigma_c
++   pi_est_laplace      = hundrediter_laplace$pi_a
++   nu0_est_laplace     = hundrediter_laplace$nu0
++   iter_laplace        = hundrediter_laplace$iter
++   gamma_laplace       = hundrediter_laplace$gamma
++ })
+1.249997 2.499987 0.01230928 0.0002424295 0.01255171 
+0 NAs in gamma 
+sum of gamma: 73728.619070 
+0 NAs in W 
+1.556322 2.597936 0.001723842 0.0003967454 0.002120588 
+0 NAs in gamma 
+sum of gamma: 73753.158985 
+0 NAs in W 
+1.553935 2.479947 0.001755581 0.0005682063 0.002323787 
+0 NAs in gamma 
+sum of gamma: 73764.481604 
+0 NAs in W 
+1.582086 2.440912 0.001588152 0.0006403206 0.002228473 
+0 NAs in gamma 
+sum of gamma: 73769.154549 
+0 NAs in W 
+1.607389 2.411656 0.001443871 0.00069716 0.002141031 
+0 NAs in gamma 
+sum of gamma: 73770.522758 
+0 NAs in W 
+1.626585 2.384567 0.001343506 0.0007550867 0.002098593 
+0 NAs in gamma 
+sum of gamma: 73770.342389 
+0 NAs in W 
+1.644239 2.363958 0.001258065 0.0008030647 0.00206113 
+0 NAs in gamma 
+sum of gamma: 73769.535683 
+0 NAs in W 
+1.657583 2.344603 0.001196852 0.0008506955 0.002047547 
+0 NAs in gamma 
+sum of gamma: 73768.560664 
+0 NAs in W 
+1.670645 2.330817 0.001138604 0.0008854724 0.002024076 
+0 NAs in gamma 
+sum of gamma: 73767.600876 
+0 NAs in W 
+-------------------
+10 Sun Oct 20 16:32:35 2019 
+0.4363656 
+0.8013939 0.718427 0.7186294 0.2994905 0.9664085 
+0 0 0.05959785 0.01444544 0 0.03334784 0.1626089 
+1.067655 
+1.682783 2.320628 0.001087984 0.0009128951 0.002000879 
+0 NAs in gamma 
+sum of gamma: 73766.765686 
+0 NAs in W 
+1.69059 2.308638 0.001056705 0.0009461493 0.002002855 
+0 NAs in gamma 
+sum of gamma: 73766.070511 
+0 NAs in W 
+1.69867 2.300437 0.001023482 0.0009679252 0.001991407 
+0 NAs in gamma 
+sum of gamma: 73765.509681 
+0 NAs in W 
+1.706136 2.294299 0.0009958112 0.0009864963 0.001982308 
+0 NAs in gamma 
+sum of gamma: 73765.073176 
+0 NAs in W 
+1.71266 2.289312 0.0009700367 0.0009995368 0.001969574 
+0 NAs in gamma 
+sum of gamma: 73764.734160 
+0 NAs in W 
+1.716538 2.28283 0.0009559181 0.00101885 0.001974768 
+0 NAs in gamma 
+sum of gamma: 73764.476443 
+0 NAs in W 
+1.719763 2.277256 0.0009429062 0.001034144 0.00197705 
+0 NAs in gamma 
+sum of gamma: 73764.282473 
+0 NAs in W 
+1.723517 2.273819 0.0009319173 0.001047341 0.001979258 
+0 NAs in gamma 
+sum of gamma: 73764.135399 
+0 NAs in W 
+1.727329 2.271688 0.000917938 0.001053217 0.001971155 
+0 NAs in gamma 
+sum of gamma: 73764.026432 
+0 NAs in W 
+1.729734 2.268802 0.000910553 0.001063317 0.00197387 
+0 NAs in gamma 
+sum of gamma: 73763.946126 
+0 NAs in W 
+-------------------
+20 Sun Oct 20 16:32:54 2019 
+0.436344 
+0.8013359 0.7243217 0.7207843 0.2976972 0.9693421 
+0 0.01815302 0.06133233 0.01790784 0 0.03278721 0.1398196 
+1.013094 
+1.73103 2.265372 0.0009072463 0.001075486 0.001982733 
+0 NAs in gamma 
+sum of gamma: 73763.886552 
+0 NAs in W 
+1.732876 2.263391 0.0008998241 0.001080432 0.001980256 
+0 NAs in gamma 
+sum of gamma: 73763.842300 
+0 NAs in W 
+1.735707 2.26335 0.0008883278 0.001078245 0.001966573 
+0 NAs in gamma 
+sum of gamma: 73763.810156 
+0 NAs in W 
+1.734516 2.258637 0.0008929185 0.00109399 0.001986908 
+0 NAs in gamma 
+sum of gamma: 73763.786515 
+0 NAs in W 
+1.737434 2.25974 0.0008830476 0.00109039 0.001973438 
+0 NAs in gamma 
+sum of gamma: 73763.769209 
+0 NAs in W 
+1.73768 2.257756 0.0008834849 0.001098343 0.001981828 
+0 NAs in gamma 
+sum of gamma: 73763.756473 
+0 NAs in W 
+1.739479 2.258135 0.0008778229 0.001097548 0.001975371 
+0 NAs in gamma 
+sum of gamma: 73763.747293 
+0 NAs in W 
+1.739143 2.256046 0.0008755421 0.001100018 0.00197556 
+0 NAs in gamma 
+sum of gamma: 73763.740593 
+0 NAs in W 
+1.740153 2.255946 0.0008754028 0.0011044 0.001979803 
+0 NAs in gamma 
+sum of gamma: 73763.735713 
+0 NAs in W 
+1.741894 2.257003 0.000869886 0.001101283 0.001971169 
+0 NAs in gamma 
+sum of gamma: 73763.732169 
+0 NAs in W 
+-------------------
+30 Sun Oct 20 16:33:12 2019 
+0.4363427 
+0.8011179 0.7232392 0.7173454 0.315226 0.9680385 
+0 0 0.06287059 0.01532088 0 0.03145215 0.1603564 
+1.002598 
+1.741235 2.255131 0.0008697602 0.001104423 0.001974183 
+0 NAs in gamma 
+sum of gamma: 73763.729590 
+0 NAs in W 
+1.740616 2.253461 0.0008757079 0.001114834 0.001990542 
+0 NAs in gamma 
+sum of gamma: 73763.727708 
+0 NAs in W 
+1.744452 2.257686 0.0008598211 0.001096942 0.001956763 
+0 NAs in gamma 
+sum of gamma: 73763.726349 
+0 NAs in W 
+1.742583 2.254638 0.0008667941 0.001107902 0.001974696 
+0 NAs in gamma 
+sum of gamma: 73763.725353 
+0 NAs in W 
+1.743413 2.255177 0.0008655658 0.001108069 0.001973635 
+0 NAs in gamma 
+sum of gamma: 73763.724636 
+0 NAs in W 
+1.742837 2.253976 0.0008664502 0.00111069 0.00197714 
+0 NAs in gamma 
+sum of gamma: 73763.724109 
+0 NAs in W 
+1.743193 2.254046 0.0008643671 0.001109285 0.001973653 
+0 NAs in gamma 
+sum of gamma: 73763.723728 
+0 NAs in W 
+1.743531 2.254152 0.0008626255 0.001108124 0.00197075 
+0 NAs in gamma 
+sum of gamma: 73763.723453 
+0 NAs in W 
+1.74299 2.253171 0.0008659475 0.001113316 0.001979263 
+0 NAs in gamma 
+sum of gamma: 73763.723252 
+0 NAs in W 
+1.744621 2.25504 0.000859958 0.001106387 0.001966345 
+0 NAs in gamma 
+sum of gamma: 73763.723107 
+0 NAs in W 
+-------------------
+40 Sun Oct 20 16:33:30 2019 
+0.4363426 
+0.7989825 0.7284329 0.7242962 0.2995501 0.9671529 
+0 0.02535748 0.06311818 0.008263672 0 0.03176783 0.1414928 
+1.000522 
+1.744044 2.25409 0.0008654198 0.001114083 0.001979502 
+0 NAs in gamma 
+sum of gamma: 73763.723002 
+0 NAs in W 
+1.744411 2.254391 0.0008606046 0.001108446 0.001969051 
+0 NAs in gamma 
+sum of gamma: 73763.722925 
+0 NAs in W 
+1.745425 2.255554 0.0008586542 0.001106415 0.001965069 
+0 NAs in gamma 
+sum of gamma: 73763.722869 
+0 NAs in W 
+1.743986 2.253567 0.0008643908 0.001114222 0.001978613 
+0 NAs in gamma 
+sum of gamma: 73763.722829 
+0 NAs in W 
+1.742579 2.251643 0.0008688889 0.001120375 0.001989264 
+0 NAs in gamma 
+sum of gamma: 73763.722799 
+0 NAs in W 
+1.744217 2.253667 0.0008614762 0.001111113 0.001972589 
+0 NAs in gamma 
+sum of gamma: 73763.722778 
+0 NAs in W 
+1.744122 2.253466 0.0008628155 0.001113096 0.001975911 
+0 NAs in gamma 
+sum of gamma: 73763.722763 
+0 NAs in W 
+1.743215 2.252228 0.0008661159 0.001117573 0.001983689 
+0 NAs in gamma 
+sum of gamma: 73763.722751 
+0 NAs in W 
+1.744037 2.253233 0.0008630426 0.001113793 0.001976835 
+0 NAs in gamma 
+sum of gamma: 73763.722743 
+0 NAs in W 
+1.743944 2.253063 0.0008621065 0.001112743 0.001974849 
+0 NAs in gamma 
+sum of gamma: 73763.722737 
+0 NAs in W 
+-------------------
+50 Sun Oct 20 16:33:48 2019 
+0.4363426 
+0.7997221 0.7223823 0.7172991 0.2986163 0.976957 
+0 0.005453669 0.06082522 0.01420973 0 0.02805615 0.1614552 
+1.000105 
+1.743197 2.252058 0.0008653268 0.001117035 0.001982362 
+0 NAs in gamma 
+sum of gamma: 73763.722733 
+0 NAs in W 
+1.744032 2.253102 0.0008626907 0.001113746 0.001976436 
+0 NAs in gamma 
+sum of gamma: 73763.722730 
+0 NAs in W 
+1.742416 2.250984 0.0008681288 0.001120865 0.001988994 
+0 NAs in gamma 
+sum of gamma: 73763.722727 
+0 NAs in W 
+1.74456 2.253728 0.000860857 0.001111559 0.001972416 
+0 NAs in gamma 
+sum of gamma: 73763.722726 
+0 NAs in W 
+1.744507 2.253639 0.0008606947 0.00111142 0.001972114 
+0 NAs in gamma 
+sum of gamma: 73763.722725 
+0 NAs in W 
+1.745166 2.254471 0.0008589051 0.001109169 0.001968074 
+0 NAs in gamma 
+sum of gamma: 73763.722724 
+0 NAs in W 
+1.744757 2.253927 0.0008595255 0.001110021 0.001969546 
+0 NAs in gamma 
+sum of gamma: 73763.722723 
+0 NAs in W 
+1.744003 2.25294 0.000862402 0.00111378 0.001976182 
+0 NAs in gamma 
+sum of gamma: 73763.722723 
+0 NAs in W 
+1.743495 2.252272 0.0008631349 0.001114763 0.001977898 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.742782 2.251342 0.0008649615 0.001117154 0.001982116 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+-------------------
+60 Sun Oct 20 16:34:06 2019 
+0.4363426 
+0.8001978 0.7198541 0.7158722 0.3039816 0.9727932 
+0 0.0004451524 0.06160004 0.01637842 0 0.03285333 0.1587231 
+1.000021 
+1.744332 2.253336 0.0008590866 0.001109593 0.00196868 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.743862 2.252721 0.0008641611 0.001116171 0.001980332 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744232 2.253193 0.0008614592 0.001112701 0.00197416 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744819 2.253946 0.0008594188 0.001110082 0.001969501 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.743686 2.252479 0.0008646558 0.001116861 0.001981516 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744851 2.253979 0.0008612953 0.001112532 0.001973827 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.743896 2.252742 0.0008603938 0.001111378 0.001971772 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.741796 2.250027 0.000870986 0.001125069 0.001996055 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744787 2.253889 0.0008605394 0.001111582 0.001972122 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744814 2.253922 0.0008591413 0.001109782 0.001968924 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+-------------------
+70 Sun Oct 20 16:34:24 2019 
+0.4363426 
+0.7970735 0.7225283 0.7172191 0.3032734 0.9717815 
+0 0 0.05956231 0.01763863 0 0.03220284 0.1605962 
+1.000004 
+1.743522 2.252251 0.000865265 0.001117698 0.001982963 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.74467 2.253732 0.0008610736 0.001112289 0.001973362 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.743287 2.251945 0.0008641607 0.00111628 0.001980441 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.74519 2.254402 0.0008578941 0.001108189 0.001966083 
+0 NAs in gamma 
+sum of gamma: 73763.722722 
+0 NAs in W 
+1.744152 2.253061 0.0008615169 0.001112871 0.001974388 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744539 2.253559 0.000862176 0.001113725 0.001975901 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745447 2.254731 0.0008578282 0.001108111 0.001965939 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.74377 2.252565 0.0008640828 0.001116192 0.001980275 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.743921 2.252759 0.0008618573 0.001113319 0.001975176 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744249 2.253183 0.0008625209 0.001114177 0.001976698 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+-------------------
+80 Sun Oct 20 16:34:43 2019 
+0.4363426 
+0.8011422 0.721506 0.7268559 0.2960988 0.9679995 
+0 0.02207778 0.06081992 0.007216148 0 0.03397852 0.1459076 
+1.000001 
+1.744192 2.253108 0.0008598306 0.001110703 0.001970534 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.74301 2.251582 0.0008667125 0.001119594 0.001986306 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744396 2.253372 0.0008601221 0.001111081 0.001971203 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744984 2.254132 0.0008605296 0.001111608 0.001972138 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.743559 2.25229 0.0008653784 0.001117873 0.001983251 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744848 2.253955 0.0008600637 0.001111008 0.001971071 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.743714 2.252491 0.0008620603 0.001113587 0.001975647 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.74511 2.254294 0.0008579319 0.001108255 0.001966187 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.742046 2.250335 0.0008668062 0.001119719 0.001986525 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.74369 2.252459 0.0008634351 0.001115364 0.001978799 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+-------------------
+90 Sun Oct 20 16:35:01 2019 
+0.4363426 
+0.7939345 0.7191897 0.7176773 0.3018909 0.9583269 
+0 0 0.06525414 0.01866302 0 0.02974475 0.1563381 
+1 
+1.74392 2.252757 0.0008626728 0.00111438 0.001977052 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745993 2.255434 0.0008547944 0.001104203 0.001958997 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745152 2.254348 0.0008601083 0.001111067 0.001971176 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745374 2.254634 0.000854801 0.001104211 0.001959012 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744063 2.25294 0.0008633089 0.001115202 0.001978511 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.744266 2.253203 0.000862657 0.00111436 0.001977017 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745082 2.254256 0.0008603214 0.001111343 0.001971664 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.745218 2.254432 0.0008576881 0.001107941 0.001965629 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.743466 2.252169 0.0008632401 0.001115113 0.001978353 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+1.7436 2.252342 0.0008640257 0.001116128 0.001980154 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+-------------------
+100 Sun Oct 20 16:35:19 2019 
+0.4363426 
+0.8017035 0.7205733 0.7151446 0.2978837 0.9673043 
+0 0 0.0642698 0.02405813 0 0.02814704 0.153525 
+1 
+1.745397 2.254663 0.0008575979 0.001107825 0.001965423 
+0 NAs in gamma 
+sum of gamma: 73763.722721 
+0 NAs in W 
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> try({
++   temp <- apply(s2,1,max)
++   temp <- temp/median(temp)
++   lb <- quantile(temp,0.15)
++   ub <- quantile(temp,0.85)
++   temp[temp<lb] <- lb
++   temp[temp>ub] <- ub
++   W <- matrix(rep(temp,ncol(Y)),ncol = ncol(Y),byrow = FALSE)
++   hundrediter_weight = deconvEM(Y,eta,mu,aber = aber, V='w', weight = W,
++                                 0.5,rho_init,nu0_init,0.1, lambda_init = 2,
++                                 nu = penalty, maxiter = 100)
++   rho[,,'WeightEM'] = hundrediter_weight$rho
++   sigma_c_est_weight   = hundrediter_weight$sigma_c
++   pi_est_weight      = hundrediter_weight$pi_a
++   nu0_est_weight     = hundrediter_weight$nu0
++   iter_weight        = hundrediter_weight$iter
++   gamma_weight       = hundrediter_weight$gamma
++ })
+> 
+> try({
++   hundrediter_het = deconvEM(Y,eta,mu,aber = aber, V='b', weight = matrix(1,5,5),
++                                 0.5,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
++                                 nu = penalty, maxiter = 100)
++   rho[,,'HeteroEM'] = hundrediter_het$rho
++   sigma_c_est_het       = hundrediter_het$sigma_c
++   pi_est_het      = hundrediter_het$pi_a
++   nu0_est_het     = hundrediter_het$nu0
++   iter_het        = hundrediter_het$iter
++   gamma_het       = hundrediter_het$gamma
++ })
+> 
+> try({
++   hundrediter = deconvEM(Y,eta,mu,aber = aber, V='c', weight = matrix(1,5,5),
++                             0.5,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
++                             nu = penalty, maxiter = 100)
++   rho[,,'OriEM'] = hundrediter$rho
++   sigma_c_est = hundrediter$sigma_c
++   pi_est      = hundrediter$pi_a
++   nu0_est     = hundrediter$nu0
++   iter        = hundrediter$iter
++   gamma       = hundrediter$gamma
++ })
+> setwd('~/Hutch-Research/R_batch2')
+> rho_COAD = rho
+> deconv_expr_COAD = deconv_expr
+> save(rho_COAD, file = 'rho_inf_COAD.RData')
+> save(deconv_expr_COAD, file = 'deconv_expr_COAD.RData')
+> 
+> dir.create('~/Hutch-Research/figures/MethyVSExpr/COAD')
+Warning message:
+In dir.create("~/Hutch-Research/figures/MethyVSExpr/COAD") :
+  '/home/zhanyu/Hutch-Research/figures/MethyVSExpr/COAD' already exists
+> setwd("~/Hutch-Research/figures/MethyVSExpr/COAD")
+> 
+> utypes = intersect(cellTypes,colnames(deconv_expr))
+> 
+> cormat <- matrix(NA,nrow = length(utypes),ncol = length(methods))
+> colnames(cormat) <- methods
+> rownames(cormat) <- utypes
+> 
+> err <- matrix(NA,nrow = length(utypes),ncol = length(methods))
+> colnames(err) <- methods
+> rownames(err) <- utypes
+> for(i in 1:length(utypes)){
++   cormat[i,] <- sapply(1:length(methods), FUN = function(j){
++     cor(rho[,utypes[i],methods[j]],deconv_expr[,utypes[i]])
++   })
++   err[i,] <- sapply(1:length(methods), FUN = function(j){
++     mean((rho[,utypes[i],methods[j]] - deconv_expr[,utypes[i]])^2)
++   }) 
++ }
+> 
+> for(i in 1:length(utypes)){
++   pdf(sprintf('%s_express_methy_discard_high_purity.pdf',utypes[i]))
++   plist = list()
++   plist <- lapply(1:length(methods), FUN = function(j){
++     tempdata = cbind(rho[,utypes[i],methods[j]],deconv_expr[,utypes[i]],eta)
++     colnames(tempdata) <- c("methylation","expression","eta")
++     newplot <- ggplot(data = as.data.frame(tempdata), aes(x=methylation,y=expression,color=eta))+ xlim(0,0.3) + ylim(0,0.3) +
++       geom_point() + geom_abline(intercept = 0,slope = 1) + ggtitle(methods[j]) 
++   })
++   grid.arrange(grobs = plist,ncol=2)
++   dev.off()
++ }
+There were 37 warnings (use warnings() to see them)
+> 
+>   pdf('correlation.pdf')
+>   plist = list()
+>   plist <- lapply(1:length(utypes),FUN = function(i){
++   tempdata = data.frame(methods,correlation = cormat[utypes[i],] )
++   corplot <- ggplot(tempdata,aes(methods,correlation))+geom_col()+ggtitle(utypes[i])
++   })
+>   grid.arrange(grobs = plist, ncol = 2)
+>   dev.off()
+null device 
+          1 
+> 
+>   pdf('RootedMSE.pdf')
+>   plist = list()
+>   plist <- lapply(1:length(utypes),FUN = function(i){
++     tempdata = data.frame(methods, rootedMSE = sqrt(err[utypes[i],]) )
++     corplot <- ggplot(tempdata,aes(methods, rootedMSE))+geom_col()+ggtitle(utypes[i])
++   })
+>   grid.arrange(grobs = plist, ncol = 2)
+>   dev.off()
+null device 
+          1 
+>   
+> print(cormat)
+             WeightEM   LaplaceEM   HeteroEM      OriEM        svr           ls
+CD4T       0.37973839 0.273614704 0.28071187 0.48164850 0.31541680 -0.003075936
+CD8T       0.49037835 0.323240272 0.40208350 0.53495188 0.42654732  0.591838321
+Monocyte   0.71060772 0.670604163 0.74854221 0.69223524 0.81048839  0.829020968
+B          0.65267168 0.619564317 0.77170725 0.71770022 0.71024832  0.740274943
+NK         0.44389028 0.105246615 0.43037623 0.36506120 0.25284972  0.293548564
+Neutrophil 0.05700784 0.061419912 0.06712369 0.05369688 0.07459968  0.183166214
+Treg       0.16306631 0.004031113 0.13590642 0.35712223 0.06814101  0.075032644
+                   rls          qp
+CD4T       0.003419762  0.48882732
+CD8T       0.592525890  0.35587539
+Monocyte   0.827027274  0.36065256
+B          0.706791262  0.66279725
+NK         0.234784900 -0.12175942
+Neutrophil 0.196835681 -0.07493888
+Treg       0.086301106  0.21089023
+> print(err)
+               WeightEM   LaplaceEM     HeteroEM        OriEM          svr
+CD4T       0.0061418350 0.008931542 0.0073191104 0.0048379174 0.0068257566
+CD8T       0.0028811479 0.018034265 0.0053486728 0.0017040637 0.0171954644
+Monocyte   0.0015041972 0.002151426 0.0018585021 0.0011181651 0.0013996714
+B          0.0037737035 0.003194182 0.0024145460 0.0028204284 0.0033212327
+NK         0.0008409597 0.001070836 0.0006222521 0.0006952158 0.0008394213
+Neutrophil 0.0039763458 0.001969072 0.0034577439 0.0036838080 0.0010118998
+Treg       0.0024393901 0.002602037 0.0036081545 0.0017170309 0.0011959510
+                     ls          rls           qp
+CD4T       0.0138479297 0.0135163069 0.0505538273
+CD8T       0.0340193350 0.0355167562 0.0068603498
+Monocyte   0.0004515313 0.0004099549 0.0029964967
+B          0.0042434729 0.0045083673 0.0068572109
+NK         0.0010253085 0.0009958193 0.0012456939
+Neutrophil 0.0023413106 0.0021300190 0.0003694701
+Treg       0.0011567928 0.0011649759 0.0014182896
+> 
+> colnames(cormat)[3] <- 'BinomEM'
+> colnames(err)[3] <- 'BinomEM'
+> methods <- c('BinomEM','OriEM','ls','svr')
+> cormat <- subset(cormat,select = methods)
+> err <- subset(err,select = methods)
+> methods <- factor(methods,levels = methods)
+> 
+> OneMinusCorr <- 1-matrix(cormat,ncol = 1, byrow = FALSE)
+> RMSE <- matrix(err,ncol = 1, byrow = FALSE )
+> CellType <- rep(cellTypes,length(methods))
+> Methods <- rep(methods,each = length(cellTypes))
+> res <- cbind.data.frame(OneMinusCorr,RMSE,CellType,Methods)
+> pdf('Comparison.pdf')
+> complot<- ggplot(res, aes(x=OneMinusCorr,y=RMSE, color =  Methods))+ggtitle('COAD')+geom_point()+scale_y_continuous(trans = log2_trans(),
++     breaks = trans_breaks('log10',function(x) 10^x),
++     labels = trans_format('log10',math_format(10^.x)))+
++     geom_text(label = res[,3])+xlim(0.1,1.05)
+> print(complot)
+> dev.off()
+null device 
+          1 
+> cormat_COAD <- cormat
+> err_COAD <- err
+> save(cormat_COAD,file='cormat_COAD.RData')
+> save(err_COAD,file = 'err_COAD.RData')
+> 
+> quit(save = 'no')
+> proc.time()
+    user   system  elapsed 
+ 902.652   56.412 1028.774 
