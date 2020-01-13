@@ -2,10 +2,10 @@
 \alias{deconvEM_CV}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+  ~~ cross validation for EMeth algorithm ~~
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  ~~ Automatic tuning for ridge penalty in EMeth algorithm. ~~
 }
 \usage{
 deconvEM_CV(Y, eta, mu, aber = TRUE, V = "c", weight = matrix(1, 5, 5), pi_a_init, rho_init, nu0_init = rep(0, 50), sigma_c_init, lambda_init = 10, nu = penlist, folds = 5, usesubset = TRUE, maxiter = 50, verbose = FALSE)
@@ -13,52 +13,52 @@ deconvEM_CV(Y, eta, mu, aber = TRUE, V = "c", weight = matrix(1, 5, 5), pi_a_ini
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{Y}{
-%%     ~~Describe \code{Y} here~~
+ ~~ Bulk tissue sample for which cell type decomposition is to be estimated. Usually a matrix of size K*I, K is the number of probes and I is the number of samples. ~~
 }
   \item{eta}{
-%%     ~~Describe \code{eta} here~~
+    ~~ Tumor purity vector. A vector input of size I = number of samples. ~~
 }
   \item{mu}{
-%%     ~~Describe \code{mu} here~~
+    ~~ Reference data. A matrix of size K*Q, K is the number of probes and Q is the number of cell types. ~~
 }
   \item{aber}{
-%%     ~~Describe \code{aber} here~~
+     ~~Logic variable. Indicate if there are tumor cells or not.~~
 }
   \item{V}{
-%%     ~~Describe \code{V} here~~
+     ~~ Variance structure, accept "c" = Constant variance, "b" = binomial variance structure, "w" = user defined weight. ~~
 }
   \item{weight}{
-%%     ~~Describe \code{weight} here~~
+    ~~ user defined weight of variance. ~~
 }
   \item{pi_a_init}{
-%%     ~~Describe \code{pi_a_init} here~~
+     ~~ A vector of size I. The probability of being abberant.~~
 }
   \item{rho_init}{
-%%     ~~Describe \code{rho_init} here~~
+     ~~ Initialization of a I*Q matrix, I = number of samples, Q = number of cell types.~~
 }
   \item{nu0_init}{
-%%     ~~Describe \code{nu0_init} here~~
+     ~~ Initializati of tumor cell types.~~
 }
   \item{sigma_c_init}{
-%%     ~~Describe \code{sigma_c_init} here~~
+     ~~ Initialization of overdispersion parameter for consistent probes. ~~
 }
   \item{lambda_init}{
-%%     ~~Describe \code{lambda_init} here~~
+    ~~ Initialization of ratio of overdispersion parameter for aberrant probes versus consistent probes.~~
 }
   \item{nu}{
-%%     ~~Describe \code{nu} here~~
+     ~~ Tuning parameter for ridge penalty. ~~
 }
   \item{folds}{
-%%     ~~Describe \code{folds} here~~
+     ~~ Specify how many folds to use in cross validation. ~~
 }
   \item{usesubset}{
-%%     ~~Describe \code{usesubset} here~~
+    ~~ Logic variable. If TRUE, use a subset of the probes to perform the cross validation. ~~
 }
   \item{maxiter}{
-%%     ~~Describe \code{maxiter} here~~
+    ~~ Maximum time of iterations. ~~
 }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
+     ~~Print out if there is anything printed during running.~~
 }
 }
 \details{
