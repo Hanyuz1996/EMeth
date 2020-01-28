@@ -1218,10 +1218,6 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     if(iter %% 10 == 0 & verbose){
     cat("-------------------\n")
     cat(iter, date(), "\n") 
-    cat(pi_a, "\n")
-    cat(nu0[1:5],"\n")
-    cat(rho[1,],"\n")
-    cat(lambda,"\n")
     }
     
     # Save old
@@ -1248,10 +1244,6 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     # M step
     V_renorm = Vc/norm(Vc)
     W        = ( gamma + lambda*(1 - gamma))/(lambda * V_renorm) 
-    
-    if(verbose){
-        cat(sprintf("%s NAs in W",length(which(is.na(W)))),"\n")
-    }
 
     pi_a     = colMeans(gamma)
     Y_c      = Y - nu0.m %*% diag(eta)
@@ -1273,12 +1265,7 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
       nu0[k] = min(1,max(0,sum(W[k,]*eta * Y_ab[k,])/sum(W[k,] * eta^2)))
     }
     }  
-    #print(nu0[1:5])
     nu0.m    = matrix(rep(nu0,times = I),ncol = I,byrow = FALSE)
-    
-    #cat('dim of mu', dim(mu), '\n')
-    #cat('dim of rho', dim(rho),'\n')
-
     Mu      = mu %*% t(rho) + nu0.m %*% diag(eta)
     
     if(V == 'b'){
@@ -1336,7 +1323,6 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     pi_a_train <- pi_a_init[sampind]
     eta_train <- eta[sampind]
     mu_train<- mu[trainind,]
-    weight_train <- weight[trainind,sampind]
     mu_test <- mu[testind,]
     
     rho_init_train <- rho_init[sampind,]
@@ -1345,7 +1331,7 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
 
     for(j in 1:length(nu)){
     #  print('In cross validation')
-      temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, weight = weight_train
+      temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, 
                          ,pi_a_train,rho_init_train,nu0_init_train,
                          sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
       rhotest<- temp$rho
@@ -1358,11 +1344,6 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
       nu0test <- unlist(nu0test)
       nu0test.m <- matrix(rep(nu0test,times = length(sampind)),ncol = length(sampind),byrow = FALSE)
       losslist[i,j] <-  mean((Y_ab - nu0test.m %*% diag(eta_train))^2)
-      if(is.na(losslist[i,j])){
-        cat("Is this NA? rhotest", table(is.na(rhotest)),'\n')
-        cat("Is this NA? nu0test", table(is.na(nu0test)),'\n')
-        cat("Sum of eta", sum(eta_train))
-      }
     }
   }
   
@@ -1383,8 +1364,6 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
 dlaplace <- function(y,m=0,s=1){
     return(exp(-abs(y-m)/s)/(2*s))
 }
-
-
 
 deconvEM_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
                       pi_a_init, rho_init, nu0_init = rep(0,50), sigma_c_init, lambda_init = 10,
@@ -1432,10 +1411,6 @@ deconvEM_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,
     if(iter %% 10 == 0 & verbose){
     cat("-------------------\n")
     cat(iter, date(), "\n") 
-    cat(pi_a, "\n")
-    cat(nu0[1:5],"\n")
-    cat(rho[1,],"\n")
-    cat(lambda,"\n")
     }
     
     # Save old
@@ -1476,11 +1451,6 @@ deconvEM_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,
     for(i in 1:I){
       y <- Y_c[,i]
       X <- mu
-      #rqfit  <- rq(y~ ., data = X, weights = W[,i]) 
-      #temp   = rqfit$coefficients[-1]
-      #temp[temp < 0] = 0
-      #print(dim(rho))
-      #print(sum(abs(y-X %*% rho[i,])*W[,i])+nu*sum(rho[i,]^2))
       
       opt <- optim(rho[i,],fn=function(a){
         sum(abs(y-X %*% a)*W[,i])+nu*sum(a^2)},gr = 'Brent')
@@ -1494,7 +1464,6 @@ deconvEM_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,
     if(aber){
     for(k in 1:K){
       y <- Y_ab[k,]
-      #rqfit <- rq(y ~ eta ,weights =W[k,] )
       opt <- optim(nu0[k],fn=function(a){
         sum(abs(y-eta * a)*W[k,])},gr = 'Brent')
       temp = opt$par
@@ -1557,7 +1526,7 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
     pi_a_train <- pi_a_init[sampind]
     eta_train <- eta[sampind]
     mu_train<- mu[trainind,]
-    weight_train <- weight[trainind,sampind]
+    #weight_train <- weight[trainind,sampind]
     mu_test <- mu[testind,]
     
     rho_init_train <- rho_init[sampind,]
@@ -1566,7 +1535,7 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
     
     for(j in 1:length(nu)){
       #  print('In cross validation')
-      temp   <- deconvEM_laplace(Y_train,eta_train,mu_train,aber,V, weight = weight_train
+      temp   <- deconvEM_laplace(Y_train,eta_train,mu_train,aber,V,
                          ,pi_a_train,rho_init_train,nu0_init_train,
                          sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
       rhotest<- temp$rho
@@ -1579,11 +1548,6 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
       nu0test <- unlist(nu0test)
       nu0test.m <- matrix(rep(nu0test,times = length(sampind)),ncol = length(sampind),byrow = FALSE)
       losslist[i,j] <-  mean((Y_ab - nu0test.m %*% diag(eta_train))^2)
-      if(is.na(losslist[i,j])){
-        cat("Is this NA? rhotest", table(is.na(rhotest)),'\n')
-        cat("Is this NA? nu0test", table(is.na(nu0test)),'\n')
-        cat("Sum of eta", sum(eta_train))
-      }
     }
   }
   
@@ -1597,6 +1561,99 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
   return(list(result,choosenu,losslist))
 }
 
+#-------------------------------------------------------------
+# emeth: high level wrapper for the package 
+#-------------------------------------------------------------
+# deconv.init: a function for default initialization
+deconv.init <- function(Y,eta,mu,aber = TRUE){
+  temp       = runif(simsize * length(cellTypes)) * 0.2 -0.1
+  rho_init   = matrix(0.5,ncol = length(cellTypes), nrow = ncol(Y))
+  nu0_init   = runif(nrow(Y))
+  sigma_c_init = 0.1
+  lambda_init  = 2
+  pi_a_init   = rep(0.5,simsize)
+  
+  for(j in 1:ncol(Y)){
+    if(j %% 50 == 0){ cat(j, date(), "\n") }
+    y    = Y[,j]
+    X    = as.data.frame(mu)
+    Xmat = mu
+    
+    temp            = lm(y ~ .-1,data = X)$coefficients
+    temp[temp < 0]  = 0
+    rho_init[j,]    = (1-eta[j])*temp/sum(temp)
+  }
 
+    K = nrow(Y)
+    Y_ab     = Y - mu %*% t(rho_init)
+    if(aber){
+      for(k in 1:K){
+        nu0_init[k] = min(1,max(0,sum(eta * Y_ab[k,])/sum(eta^2)))
+      }
+    }
+    
+    init.paras <- list(weight = matrix(1,5,5),
+                       pi_a_init = pi_a_init, rho_init = rho_init, nu0_init = nu0_init, 
+                       sigma_c_init=0.1 , lambda_init = 10)
+    return(init.paras)
+}
 
-
+emeth <- function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
+                  nu = 0, maxiter = 50, verbose = FALSE){
+    if(init == 'default'){
+      initlist = deconv.init(Y,eta,mu,aber)
+    } 
+    else{
+      initlist = init
+    }
+    weight = initlist$weight
+    pi_a_init = initlist$pi_a_init
+    rho_init = initlist$rho_init
+    nu0_init = initlist$nu0_init
+    sigma_c_init = initlist$sigma_c_init
+    lambda_init = initlist$lambda_init
+    
+    if(family == 'laplace'){
+      result = deconvEM_laplace(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
+                        sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
+      return(result)
+    }
+    else if(family == 'normal'){
+      result = deconvEM(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
+                        sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
+      return(result)
+    }
+    else{
+      stop("Must specify the family from laplace or normal!")
+    }
+}
+  
+cv.emeth <- function(Y,eta,mu,aber,V, init = 'default', nu = 0, family = 'laplace',
+                     folds = 5, usesubset = TRUE, maxiter = 50, verbose = FALSE){
+  if(init == 'default'){
+    initlist = deconv.init(Y,eta,mu,aber)
+  } 
+  else{
+    initlist = init
+  }
+  weight = initlist$weight
+  pi_a_init = initlist$pi_a_init
+  rho_init = initlist$rho_init
+  nu0_init = initlist$nu0_init
+  sigma_c_init = initlist$sigma_c_init
+  lambda_init = initlist$lambda_init
+  
+  if(family == 'laplace'){
+  result = deconvEM_CV_laplace(Y,eta,mu,aber = TRUE, V = 'c', weight,
+                               pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
+                               nu, folds, usesubset, maxiter, verbose = FALSE)
+  }
+  else if(family == 'normal'){
+    result = deconvEM_CV(Y,eta,mu,aber = TRUE, V = 'c', weight,
+                         pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
+                         nu, folds, usesubset, maxiter, verbose = FALSE)
+  }
+  else{
+    stop("Must specify the family from laplace or normal!")
+  }
+}

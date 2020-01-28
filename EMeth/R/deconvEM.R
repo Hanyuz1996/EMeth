@@ -1,5 +1,4 @@
-deconvEM <-
-function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
+deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
                       pi_a_init, rho_init, nu0_init = rep(0,50), sigma_c_init=0.1 , lambda_init = 10,
                       nu = 0, maxiter=50, verbose = FALSE ){
   

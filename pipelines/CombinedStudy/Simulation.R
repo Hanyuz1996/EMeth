@@ -5,10 +5,8 @@ library(quadprog)
 library(ggplot2)
 library(e1071)
 
-setwd('~')
 dir = getwd()
-source(paste(dir,"/Hutch-Research/R_batch1/EstimatingMethylation.R",sep=""))
-setwd(paste(dir,"/Hutch-Research/R_batch1",sep=""))
+source("EstimatingMethylation.R")
 set.seed(1750905)
 
 #---------------------------------------------------------
@@ -30,20 +28,7 @@ gen_methy_beta <- function(mu,alpha,sample.size, pi=0, cellnum = 100, noise){
     nu0   = runif(nrow(mu))
     nu0.m = matrix(rep(nu0,times = sample.size),ncol = sample.size,byrow = FALSE)
    
-    #for(i in 1:sample.size){
-    #  temp = rep(0,nrow(mu))
-    #  for(j in 1:length(cellTypes)){
-    #    temp = temp + rbinom(n = nrow(mu), size = nsub[i,j], prob = mu[,j])
-    #  }
-    #  temp = temp + rbinom(n = nrow(mu) ,size = neta, prob = nu0)
-    #  temp = temp/(sum(nsub[i,])+neta[i])
-    #  Y[,i]= temp
-    #}
     Y = mu %*% t(rho) + nu0.m %*% diag(eta)
-    
-    #V = (mu*(1-mu)) %*% t(rho)
-    #V = V + matrix(rep(nu0*(1-nu0),sample.size),ncol=sample.size,byrow=FALSE) %*% diag(eta)
-    #V = V / cellNum
     V = matrix(1/cellNum)
     
     pi.m = rep(runif(sample.size,pi-0.05,pi+0.05),nrow(Y))
@@ -67,7 +52,7 @@ runsim <- function(simsize,simnoise,simpi,reptime,aber = FALSE, penalty = penalt
   }
   
   simdata   = gen_methy_beta(mugenpert,alpha,sample.size = simsize, pi = simpi, cellnum = cellnum,noise = simnoise)
-  print("Millions of cells generated")
+  print("Data generated")
   Y         = simdata$bulk_sample
   eta       = simdata$eta
   nu0       = simdata$nu0
@@ -85,7 +70,7 @@ runsim <- function(simsize,simnoise,simpi,reptime,aber = FALSE, penalty = penalt
   #-------------------------------------------------------------
   # Estimating rho_qi by several methods: wls; ls; rls; qp
   #-------------------------------------------------------------
-  methods = c("LaplaceEM",'BinomEM','MaxVarEM',"OriEM","svr","ls","rls","qp")
+  methods = c("LaplaceEM","OriEM","svr","ls","rls","qp")
   rho     = array(data = NA, dim = c(nrow(rho.true),ncol(rho.true),length(methods)+1),
                   dimnames = list(1:nrow(rho.true),cellTypes,c(methods,"true")))
   err     = array(data = NA, dim = c(nrow(rho.true),ncol(rho.true),length(methods)),
@@ -147,41 +132,23 @@ runsim <- function(simsize,simnoise,simpi,reptime,aber = FALSE, penalty = penalt
     }
     }
   
-  temp <- apply(s2,1,max)
-  temp <- temp/median(temp)
-  lb <- quantile(temp,0.15)
-  ub <- quantile(temp,0.85)
-  temp[temp<lb] <- lb
-  temp[temp>ub] <- ub
-  W <- matrix(rep(temp,ncol(Y)),ncol = ncol(Y),byrow = FALSE)
+  #temp <- apply(s2,1,max)
+  #temp <- temp/median(temp)
+  #lb <- quantile(temp,0.15)
+  #ub <- quantile(temp,0.85)
+  #temp[temp<lb] <- lb
+  #temp[temp>ub] <- ub
+  #W <- matrix(rep(temp,ncol(Y)),ncol = ncol(Y),byrow = FALSE)
 
   print('LaplaceEM')
-  #hundrediter_laplace = deconvEM_laplace(Y,eta,mu,aber = aber, V='b', weight = s2,
-  #                        pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-  #                        nu = penalty, maxiter = maxiter)
-  hundrediter_laplace = deconvEM_CV_laplace(Y,eta,mu,aber = aber, V='c', weight = W,
-              pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-              nu = penalty, folds = 5, maxiter = maxiter)
+  hundrediter_laplace = cv.emeth(Y,eta,mu,aber = aber, V='c', init = 'default',
+                                 family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
   rho[,,'LaplaceEM'] = hundrediter_laplace[[1]]$rho
-
-  print('MaxVarEM')
-
-  hundrediter_weight = deconvEM_CV(Y,eta,mu,aber = aber, V='w', weight = W,
-                                   pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                          nu = penalty, folds = 5, maxiter = maxiter)
-  rho[,,'MaxVarEM'] = hundrediter_weight[[1]]$rho
   
   print('OriEM')
-  hundrediter = deconvEM_CV(Y,eta,mu,aber = aber, V='c', weight = W ,
-                            pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                          nu = penalty, folds = 5, maxiter = maxiter)
+  hundrediter = cv.emeth(Y,eta,mu,aber = aber, V='c', init = 'default',
+                         family = 'normal', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
   rho[,,'OriEM'] = hundrediter[[1]]$rho
-  
-  print('BinomEM')
-  hundrediter_het = deconvEM_CV(Y,eta,mu,aber = aber, V='b', weight = W,
-                               pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                          nu = penalty, folds = 5, maxiter = maxiter)  
-  rho[,,'BinomEM'] = hundrediter_het[[1]]$rho
         
     for(k in 1:length(methods)){
       err[,,k] = (rho[,,k]-rho.true)^2
@@ -228,8 +195,6 @@ runsim <- function(simsize,simnoise,simpi,reptime,aber = FALSE, penalty = penalt
   
     list(rho = rho, err = err.mean, cor = cormat,
          laplace = hundrediter_laplace[[1]],
-         weight = hundrediter_weight[[1]],
-         het = hundrediter_het[[1]], 
          ori = hundrediter[[1]], 
          true = simdata,
          rss = rss,

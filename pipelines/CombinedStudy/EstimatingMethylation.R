@@ -1,9 +1,7 @@
-#library(car)
 
-dir = '~'
-source(paste(dir,"/Hutch-Research/R_batch1/_lib.R",sep=""))
-source(paste(dir,"/Hutch-Research/R_batch1/GetMethylationMatrix.R",sep=""))
-setwd(paste(dir,"/Hutch-Research/R_batch1",sep=""))
+source('../../source/_lib.R')
+source("GetMethylationMatrix.R")
+
 
 #----------------------------------------------------------
 # Estimate distribution for each CpG and cell type

@@ -1,9 +1,8 @@
 library(nnls)
 library(data.table)
 
-dir = '~'
-source(paste(dir,"/Hutch-Research/R_batch1/_lib.R",sep=""))
-setwd(paste(dir,"/Hutch-Research/Data/Processed",sep=""))
+source('../../source/_lib.R')
+setwd("~/Hutch-Research/Data/Processed")
 
 #---------------------------------------------------------------
 # Read cell type specific methylation data
@@ -133,8 +132,7 @@ table(colnames(datM) == emInfo$patient_id)
 # ------------------------------------------------------------
 # read in probes to be used
 # ------------------------------------------------------------
-setwd(paste(dir,"/Hutch-Research/Data/Processed",sep=""))
-load('p2use_half_14.RData')
+load('~/Hutch-Research/Data/Processed/p2use_half_14.RData')
 if(1<0){panT = c("CD4T", "CD8T", "Treg")
 p2use = levels = list()
 
@@ -273,6 +271,7 @@ dim(sam_est)
 table(sam_est$id == colnames(X))
 table(sam_est$label)
 
+setwd('~/Desktop/EMeth/pipelines/CombinedStudy')
 # ------------------------------------------------------------
 # extract methylation data from tumor samples
 # ------------------------------------------------------------

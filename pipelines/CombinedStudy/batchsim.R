@@ -3,22 +3,20 @@ library('quantreg')
 library('gridExtra')
 library('cowplot')
 
-setwd('~')
 dir  = getwd()
-source(paste(dir,"/Hutch-Research/R_batch1/Simulation.R",sep=""))
-setwd(paste(dir,"/Hutch-Research/R_batch1",sep=""))
-source('_lib.R')
+source("Simulation.R")
+  
 
-simsize  = 100 
-simnoise = {simnoise}   #(1,2,3,4,5,10)
+simsize  = 10 
+simnoise = 2   #(1,2,3,4,5,10)
 simpi = 0.1       #(0.01,0.1,0.5,0.9)
 alpha = rep(1/7,7)
 #penalty = 1000
 penalty= (dim(mu)[1])*(10^seq(-2,1,0.5)) 
-cellnum = {cellnum}
+cellnum = 250
 #true.sigma = c(simnoise*0.05,0.05)
-reptime = 25      #1:100
-methods = c("LaplaceEM","MaxVarEM","BinomEM","OriEM","svr","ls","rls","qp")
+reptime = 2      #1:100
+methods = c("LaplaceEM","OriEM","svr","ls","rls","qp")
 res.err = res.cor = res.rss = array(data = NA, dim = c(length(cellTypes),length(methods),reptime),
                           dimnames = list(cellTypes,methods,1:reptime))
 #res.sigma = matrix(NA, nrow = reptime, ncol = 2)
@@ -47,7 +45,7 @@ temp   = true$idic
 temp_t = which(temp == TRUE)
 temp_f = which(temp == FALSE)
 total  = length(temp)
- for(j in 1:4){{
+ for(j in 1:2){{
      res.nu0[i,j] = cor(result[[j+3]]$nu0, true$nu0)
      res.pi[i,j]  = mean(result[[j+3]]$pi_a)
      res.sigma_c[i,j]  = result[[j+3]]$sigma_c
