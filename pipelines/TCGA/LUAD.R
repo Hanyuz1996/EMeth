@@ -1,6 +1,6 @@
 library('data.table')
 library('stringr')
-source("~/Hutch-Research/R_batch1/_lib.R")
+source("~/test/source/_lib.R")
 
 setwd("~/Hutch-Research/Data/Processed")
 

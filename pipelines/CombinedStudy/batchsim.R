@@ -67,6 +67,7 @@ save(res.err,file = sprintf('err_%s.RData', setting))
 save(res.cor,file = sprintf('cor_%s.RData', setting))
 save(res.nu0,file = sprintf('nu0_%s.RData', setting))
 
+dir.create('../figures')
 dir.create(sprintf('../figures/%s',Sys.Date()))
   
 pdf(sprintf("../figures/%s/nu0_%d_%d_%d.pdf",Sys.Date(),cellnum,simsize,simnoise), width = 20, height = 8)
