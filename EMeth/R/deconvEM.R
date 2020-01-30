@@ -1,4 +1,5 @@
-deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
+deconvEM <-
+function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
                       pi_a_init, rho_init, nu0_init = rep(0,50), sigma_c_init=0.1 , lambda_init = 10,
                       nu = 0, maxiter=50, verbose = FALSE ){
   
@@ -44,10 +45,6 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     if(iter %% 10 == 0 & verbose){
     cat("-------------------\n")
     cat(iter, date(), "\n") 
-    cat(pi_a, "\n")
-    cat(nu0[1:5],"\n")
-    cat(rho[1,],"\n")
-    cat(lambda,"\n")
     }
     
     # Save old
@@ -74,10 +71,6 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     # M step
     V_renorm = Vc/norm(Vc)
     W        = ( gamma + lambda*(1 - gamma))/(lambda * V_renorm) 
-    
-    if(verbose){
-        cat(sprintf("%s NAs in W",length(which(is.na(W)))),"\n")
-    }
 
     pi_a     = colMeans(gamma)
     Y_c      = Y - nu0.m %*% diag(eta)
@@ -99,12 +92,7 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
       nu0[k] = min(1,max(0,sum(W[k,]*eta * Y_ab[k,])/sum(W[k,] * eta^2)))
     }
     }  
-    #print(nu0[1:5])
     nu0.m    = matrix(rep(nu0,times = I),ncol = I,byrow = FALSE)
-    
-    #cat('dim of mu', dim(mu), '\n')
-    #cat('dim of rho', dim(rho),'\n')
-
     Mu      = mu %*% t(rho) + nu0.m %*% diag(eta)
     
     if(V == 'b'){
@@ -129,7 +117,6 @@ deconvEM <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     # Check convergence
     if(max(abs(rho_old-rho))<1e-4){break}
   }
-  cat('sigma_c_square', sigma_c,'\n')
   
   list(rho = rho, sigma_c = sigma_c, lambda = lambda, nu0 = nu0, pi_a = pi_a, gamma = gamma, weights = W, iter = iter)
 }

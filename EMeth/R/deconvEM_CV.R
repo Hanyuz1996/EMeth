@@ -24,7 +24,6 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     pi_a_train <- pi_a_init[sampind]
     eta_train <- eta[sampind]
     mu_train<- mu[trainind,]
-    weight_train <- weight[trainind,sampind]
     mu_test <- mu[testind,]
     
     rho_init_train <- rho_init[sampind,]
@@ -33,7 +32,7 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
 
     for(j in 1:length(nu)){
     #  print('In cross validation')
-      temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, weight = weight_train
+      temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, 
                          ,pi_a_train,rho_init_train,nu0_init_train,
                          sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
       rhotest<- temp$rho
@@ -46,11 +45,6 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
       nu0test <- unlist(nu0test)
       nu0test.m <- matrix(rep(nu0test,times = length(sampind)),ncol = length(sampind),byrow = FALSE)
       losslist[i,j] <-  mean((Y_ab - nu0test.m %*% diag(eta_train))^2)
-      if(is.na(losslist[i,j])){
-        cat("Is this NA? rhotest", table(is.na(rhotest)),'\n')
-        cat("Is this NA? nu0test", table(is.na(nu0test)),'\n')
-        cat("Sum of eta", sum(eta_train))
-      }
     }
   }
   

@@ -1306,10 +1306,14 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
                       sigma_c_init,lambda_init,nu=nu,maxiter)
     return(list(result,nu))
   }
-  
+  if(verbose){print('Verbose = TRUE: iteration information will be printed.')}
   rdnumber <- runif(nrow(Y))
   losslist <- matrix(NA, nrow = folds, ncol = length(nu))
   for(i in 1:folds){
+    if(verbose){
+      cat('#########################################\n')
+      cat('In cross validation, folds  = ', i, '\n')
+    }
     testind <- which(rdnumber < i/folds & rdnumber > (i-1)/folds )
     trainind <- setdiff(1:nrow(Y),testind)
     sampind <- 1:ncol(Y)
@@ -1330,7 +1334,9 @@ deconvEM_CV <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     nu0test <- rep(0,length(testind))
 
     for(j in 1:length(nu)){
-    #  print('In cross validation')
+      if(verbose){
+        cat('parameter nu = ', nu[j], '\n')
+      }
       temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, 
                          ,pi_a_train,rho_init_train,nu0_init_train,
                          sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
@@ -1506,9 +1512,14 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
     return(list(result,nu))
   }
   
+  if(verbose){print('Verbose = TRUE: iteration information will be printed.')}
   rdnumber <- runif(nrow(Y))
   losslist <- matrix(NA, nrow = folds, ncol = length(nu))
   for(i in 1:folds){
+    if(verbose){
+      cat('#########################################\n')
+      cat('In cross validation, folds  = ', i, '\n')
+    }
     testind <- which(rdnumber < i/folds & rdnumber > (i-1)/folds )
     trainind <- setdiff(1:nrow(Y),testind)
     sampind <- 1:ncol(Y)
@@ -1530,7 +1541,7 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
     nu0test <- rep(0,length(testind))
     
     for(j in 1:length(nu)){
-      #  print('In cross validation')
+      if(verbose){cat('nu = ', nu[j], '\n')}
       temp   <- deconvEM_laplace(Y_train,eta_train,mu_train,aber,V,
                          ,pi_a_train,rho_init_train,nu0_init_train,
                          sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
@@ -1562,6 +1573,8 @@ deconvEM_CV_laplace <- function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1
 #-------------------------------------------------------------
 # deconv.init: a function for default initialization
 deconv.init <- function(Y,eta,mu,aber = TRUE){
+  simsize = ncol(Y)
+  cellType = colnames(mu)
   temp       = runif(simsize * length(cellTypes)) * 0.2 -0.1
   rho_init   = matrix(0.5,ncol = length(cellTypes), nrow = ncol(Y))
   nu0_init   = runif(nrow(Y))
@@ -1640,12 +1653,12 @@ cv.emeth <- function(Y,eta,mu,aber,V, init = 'default', nu = 0, family = 'laplac
   lambda_init = initlist$lambda_init
   
   if(family == 'laplace'){
-  result = deconvEM_CV_laplace(Y,eta,mu,aber = TRUE, V = 'c', weight,
+  result = deconvEM_CV_laplace(Y,eta,mu,aber = aber, V = 'c', weight,
                                pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
                                nu, folds, usesubset, maxiter, verbose = verbose)
   }
   else if(family == 'normal'){
-    result = deconvEM_CV(Y,eta,mu,aber = TRUE, V = 'c', weight,
+    result = deconvEM_CV(Y,eta,mu,aber = aber, V = 'c', weight,
                          pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
                          nu, folds, usesubset, maxiter, verbose = verbose)
   }

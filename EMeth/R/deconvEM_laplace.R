@@ -45,10 +45,6 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     if(iter %% 10 == 0 & verbose){
     cat("-------------------\n")
     cat(iter, date(), "\n") 
-    cat(pi_a, "\n")
-    cat(nu0[1:5],"\n")
-    cat(rho[1,],"\n")
-    cat(lambda,"\n")
     }
     
     # Save old
@@ -71,15 +67,13 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     pdf_c    = dlaplace(e/Vc) %*% diag(1-pi_a)/Vc
     
     gamma    = pdf_a/(pdf_a+pdf_c)
+    #print(dim(gamma))
     
     # M step
     V_renorm = Vc/norm(Vc)
     W        = ( gamma + lambda*(1 - gamma))/(lambda * V_renorm) 
+    #print(dim(W))
     
-    if(verbose){
-        cat(sprintf("%s NAs in W",length(which(is.na(W)))),"\n")
-    }
-
     pi_a     = colMeans(gamma)
     Y_c      = Y - nu0.m %*% diag(eta)
     nulist   = rep(0,I)
@@ -87,9 +81,6 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     for(i in 1:I){
       y <- Y_c[,i]
       X <- mu
-      #rqfit  <- rq(y~ ., data = X, weights = W[,i]) 
-      #temp   = rqfit$coefficients[-1]
-      #temp[temp < 0] = 0
       
       opt <- optim(rho[i,],fn=function(a){
         sum(abs(y-X %*% a)*W[,i])+nu*sum(a^2)},gr = 'Brent')
@@ -103,7 +94,6 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     if(aber){
     for(k in 1:K){
       y <- Y_ab[k,]
-      #rqfit <- rq(y ~ eta ,weights =W[k,] )
       opt <- optim(nu0[k],fn=function(a){
         sum(abs(y-eta * a)*W[k,])},gr = 'Brent')
       temp = opt$par
@@ -138,6 +128,5 @@ function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
     if(max(abs(rho_old-rho))<1e-4){break}
   }
   
-  cat('sigma_c_square', sigma_c,'\n')
   list(rho = rho, sigma_c = sigma_c, lambda = lambda,nu0 = nu0, pi_a = pi_a, gamma = gamma, weights = W, iter = iter)
 }

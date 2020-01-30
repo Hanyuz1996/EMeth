@@ -1,9 +1,9 @@
 Package: EMeth
 Type: Package
-Title: What the package does (short line)
+Title: Cell type decomposition based on methylation data
 Version: 1.0
-Date: 2020-01-11
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Date: 2020-01-29
+Author: Hanyu Zhang
+Maintainer: Hanyu Zhang <hanyuz6@uw.edu>
+Description: This is a package for implementing EMeth algorithm. It provide two families of EMeth ("normal" and "laplace") and also has a wrapper for cross-validation of tuning parameters for the penalized likelihood method.
+License: GPL (>= 2)
