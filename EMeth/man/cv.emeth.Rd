@@ -8,16 +8,45 @@ cv.emeth: cross validation for emeth.
 An implementation of cross validation for the ridge penalty parameter in EMeth.
 }
 \usage{
-cv.emeth(Y, eta, mu, aber, V, init = "default", nu = 0, family = "laplace", folds = 5, usesubset = TRUE, maxiter = 50, verbose = FALSE)
+cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 5, usesubset = TRUE, maxiter = 50, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  Most can be found in emeth. The different parameters are
+    \item{Y}{
+     Matrix of size K*I. Methylation of bulk sample for which the cell type decomposition is to be estimated. Y is usually a K*I matrix where K is the number of probes used and I is the number os samples. 
+}
+  \item{eta}{
+      Vector of size I. Tumor purity of each sample. 
+}
+  \item{mu}{
+      Matrix of size K*Q. Reference matrix, provided by literature. A sample reference data in the example directory is provided, that is obtained from six previous literatures. 
+}
+  \item{aber}{
+     Logic variable: if there is unknown aberrant cell type. 
+}
+  \item{V}{
+     string: default to be 'c' which stands for constant weight for all probes. It might be  'b' for binomial variance structure or 'w' for specific weight structure of variance.
+}
+  \item{init}{
+     If init is a string 'default', we will adopt the default random initialization of all parameters for the algorithm. Otherwise one can provide a list of initialization of parameters.
+}
+  \item{family}{
+     string: accept 'normal' or 'laplace' to specify what likelihood will be used in the algorithm.
+}
+  \item{nu}{
+    a nonnegative number that stands for the penalty. 
+}
   \item{folds}{
      Specify the number of folds for the cross validation.
 }
   \item{usesubset}{
      Logic variable, if it is true, a random sampled subset of all probes are used to perform cross-validation.
+}
+    \item{maxiter}{
+    max time of iteration of the EM algorithm, default to be 50.
+}
+  \item{verbose}{
+    logic variable. If TRUE then will print additional information in iteration of EMeth.
 }
 }
 
@@ -45,9 +74,10 @@ Hanyu Zhang
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
-\examples{
-## See examples folder.
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 %\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\examples{
+## See examples folder.
+}

@@ -2,8 +2,7 @@ library(data.table)
 #library(multcomp)
 
 setwd('~/Hutch-Research/R_batch3')
-source('MeanVar.R')
-source('selectGene.R')
+source('step1-estMeanVar.R')
 source('~/Hutch-Research/R_batch1/_lib.R')
 subsize = dim(dat.est)[2]/3
 labels = c(rep(cellTypes[1],subsize),rep(cellTypes[2],subsize),rep(cellTypes[3],subsize))

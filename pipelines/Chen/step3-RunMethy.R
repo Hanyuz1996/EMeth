@@ -8,9 +8,9 @@ library(gridExtra)
 library(quantreg)
 setwd('~/Hutch-Research/R_batch3')
 perturbconst = 5
-source('~/R_batch1/_lib.R')
-source('MeanVar.R')
-source('filterProbes.R')
+source('~/Desktop/EMeth/source/_lib.R')
+source('~/Desktop/EMeth/pipelines/Chen/step1-estMeanVar.R')
+source('~/Desktop/EMeth/pipelines/Chen/step2-filterProbes.R')
 
 sampsize = dim(dat.gen[[1]])[2]
 use_new_probe = TRUE
@@ -18,9 +18,6 @@ penalty = 500
 aber = FALSE
 if(use_new_probe){
   load('probes.RData')
-}else{
-  load('_946probes.RData')
-  genes = rownames(mu)
 }
 
 genes = intersect(genes, cpgname)
@@ -136,66 +133,15 @@ if(aber){
     nu0_init[k] = min(1,max(0,sum(eta * Y_ab[k,])/sum( eta^2)))
   }
 }
-temp <- apply(s2,1,max)
-temp <- temp/median(temp)
-lb <- quantile(temp,0.15)
-ub <- quantile(temp,0.85)
-temp[temp<lb] <- lb
-temp[temp>ub] <- ub
-W <- matrix(rep(temp,ncol(Y)),ncol = ncol(Y),byrow = FALSE)
-maxiter = 50
 print('LaplaceEM')
-#hundrediter_laplace = deconvEM_laplace(Y,eta,mu,aber = aber, V='b', weight = s2,
-#                        pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-#                        nu = penalty, maxiter = maxiter)
+hundrediter_laplace = cv.emeth(Y,eta,mu,aber = aber, V='c', init = 'default',
+                               family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
+rho[,,'LaplaceEM'] = hundrediter_laplace[[1]]$rho
 
-
-try({
-  hundrediter_laplace = deconvEM_CV_laplace(Y,eta,mu,aber = aber, V='c', weight = W,
-                                            pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                                            nu = penalty, folds = 5, maxiter = maxiter)
-  rho[,,'LaplaceEM'] = hundrediter_laplace[[1]]$rho
-
-})
-
-if(1<0){try({
-  temp <- apply(s2,1,max)
-  temp <- temp/median(temp)
-  lb <- quantile(temp,0.15)
-  ub <- quantile(temp,0.85)
-  temp[temp<lb] <- lb
-  temp[temp>ub] <- ub
-  W <- matrix(rep(temp,ncol(Y)),ncol = ncol(Y),byrow = FALSE)
-  hundrediter_weight = deconvEM(Y,eta,mu,aber = aber, V='w', weight = W,
-                                0.5,rho_init,nu0_init,0.1, lambda_init = 2,
-                                nu = penalty, maxiter = 100)
-  rho[,,'MaxVarEM'] = hundrediter_weight$rho
-  sigma_c_est_weight   = hundrediter_weight$sigma_c
-  pi_est_weight      = hundrediter_weight$pi_a
-  nu0_est_weight     = hundrediter_weight$nu0
-  iter_weight        = hundrediter_weight$iter
-  gamma_weight       = hundrediter_weight$gamma
-})}
-
-if(1<0){try({
-  hundrediter_het = deconvEM(Y,eta,mu,aber = aber, V='b', weight = matrix(1,5,5),
-                             0.5,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                             nu = penalty, maxiter = 100)
-  rho[,,'BinomEM'] = hundrediter_het$rho
-  sigma_c_est_het       = hundrediter_het$sigma_c
-  pi_est_het      = hundrediter_het$pi_a
-  nu0_est_het     = hundrediter_het$nu0
-  iter_het        = hundrediter_het$iter
-  gamma_het       = hundrediter_het$gamma
-})}
-
-try({
-  print('OriEM')
-  hundrediter = deconvEM_CV(Y,eta,mu,aber = aber, V='c', weight = W ,
-                            pi_a_init = pi_a,rho_init,nu0_init,sigma_c_init = 0.1, lambda_init = 2,
-                            nu = penalty, folds = 5, maxiter = maxiter)
-  rho[,,'OriEM'] = hundrediter[[1]]$rho
-})
+print('OriEM')
+hundrediter = cv.emeth(Y,eta,mu,aber = aber, V='c', init = 'default',
+                       family = 'normal', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
+rho[,,'OriEM'] = hundrediter[[1]]$rho
 path = sprintf('~/Hutch-Research/figures/Chen/%s',perturbconst)
 dir.create(path)
 setwd(path)

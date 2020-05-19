@@ -1,0 +1,6 @@
+EMeth-package           Cell type decomposition based on methylation
+                        data
+cv.emeth                cv.emeth: cross validation for emeth.
+emeth                   emeth: cell type decomposition from DNA
+                        methylation data based on EM-type algorithm and
+                        penalized likelihood maximization.

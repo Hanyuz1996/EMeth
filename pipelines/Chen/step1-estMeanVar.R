@@ -1,6 +1,6 @@
 library('data.table')
 setwd('~/Hutch-Research/R_batch3')
-source('GetData.R')
+source('step0-GetData.R')
 
 loadfromfile = TRUE
 perturb = TRUE

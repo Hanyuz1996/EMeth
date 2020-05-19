@@ -73,7 +73,7 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
 }
 \examples{
 ## See examples folder
-
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 %\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")

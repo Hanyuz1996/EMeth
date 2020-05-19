@@ -1,9 +1,8 @@
 library('data.table')
-setwd('~/Hutch-Research/Data/Chen')
 
-dat1 <- fread('mono.txt.gz')
-dat2 <- fread('neut.txt.gz')
-dat3 <- fread('tcel.txt.gz')
+dat1 <- fread('~/Hutch-Research/Data/Chen/mono.txt.gz')
+dat2 <- fread('~/Hutch-Research/Data/Chen/neut.txt.gz')
+dat3 <- fread('~/Hutch-Research/Data/Chen/tcel.txt.gz')
 
 
 pert <- function(mat,type = 'methylation', C = perturbconst){

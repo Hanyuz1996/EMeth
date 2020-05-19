@@ -22,16 +22,16 @@ The DESCRIPTION file:
 
 Maintainer: \packageMaintainer{EMeth}
 }
-\references{
-~~ Literature or other references for background information ~~
-}
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
-~~ documentation directory ~~
-\keyword{ package }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
+%\references{
+%~~ Literature or other references for background information ~~
+%}
+%~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
+%~~ documentation directory ~~
+%\keyword{ package }
+%\seealso{
+%~~ Optional links to other man pages, e.g. ~~
+%~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+%}
 \examples{
-~~ Examples can be seen in the example subdirectory.  ~~
+# Examples can be found in the "example" subdirectory.
 }

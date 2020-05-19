@@ -1,3 +1,4 @@
+library('quadprog')
 emeth <-
 function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
                   nu = 0, maxiter = 50, verbose = FALSE){
@@ -16,12 +17,12 @@ function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
     
     if(family == 'laplace'){
       result = deconvEM_laplace(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
-                        sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
+                        sigma_c_init,lambda_init,nu=nu, maxiter = maxiter, verbose = verbose)
       return(result)
     }
     else if(family == 'normal'){
       result = deconvEM(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
-                        sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
+                        sigma_c_init,lambda_init,nu=nu, maxiter = maxiter, verbose = verbose)
       return(result)
     }
     else{
