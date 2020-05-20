@@ -6,4 +6,7 @@ Date: 2020-01-29
 Author: Hanyu Zhang
 Maintainer: Hanyu Zhang <hanyuz6@uw.edu>
 Description: This is a package for implementing EMeth algorithm. It provide two families of EMeth ("normal" and "laplace") and also has a wrapper for cross-validation of tuning parameters for the penalized likelihood method.
+Depends: quadprog
 License: GPL (>= 2)
+NeedsCompilation: no
+Packaged: 2020-05-20 07:10:21 UTC; wsun

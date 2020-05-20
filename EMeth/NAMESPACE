@@ -1,1 +1,12 @@
-exportPattern("^[[:alpha:]]+")
+
+import(quadprog)
+importFrom("stats", "dnorm", "lm", "optim", "runif")
+
+# ------------------------------------------
+# Export directives.  
+# ------------------------------------------
+
+export(cv.emeth)
+export(emeth)
+
+    

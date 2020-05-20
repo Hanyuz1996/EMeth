@@ -1,4 +1,3 @@
-library('quadprog')
 emeth <-
 function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
                   nu = 0, maxiter = 50, verbose = FALSE){

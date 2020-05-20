@@ -1,4 +1,3 @@
-library('quadprog')
 cv.emeth <-
 function(Y,eta,mu,aber,V, init = 'default', nu, family = 'laplace',
                      folds = 5, usesubset = TRUE, maxiter = 50, verbose = FALSE){
