@@ -29,7 +29,9 @@ gen_methy_beta <- function(mu,alpha,sample.size, pi=0, cellnum = 100, noise){
     nu0.m = matrix(rep(nu0,times = sample.size),ncol = sample.size,byrow = FALSE)
    
     Y = mu %*% t(rho) + nu0.m %*% diag(eta)
-    V = matrix(1/cellNum)
+    V = (mu*(1-mu)) %*% t(rho)
+    V = V + matrix(rep(nu0*(1-nu0),sample.size),ncol=sample.size,byrow=FALSE) %*% diag(eta)
+    V = V / cellNum
     
     pi.m = rep(runif(sample.size,pi-0.05,pi+0.05),nrow(Y))
     idic         = runif(n = nrow(mu)*sample.size) < pi.m
