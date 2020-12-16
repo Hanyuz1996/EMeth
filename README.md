@@ -17,6 +17,7 @@
 ## Example
   An example use:
   ```
+     library("EMeth")
      Emeth_laplace = cv.emeth(Y,eta,mu,aber = TRUE, V='c', init = 'default',
                                family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
   ```
