@@ -4,7 +4,7 @@
 - _cv.emeth_, which helps tuning the ridge penalty by cross validation.
 
 ## Prerequisite
- EMeth package requires R version 3.6.0 or higher. 
+ EMeth package requires R version 3.6.0 or higher. It requires the package ```quadprog```
 
 ## Installation 
  To install this package in R, use 
