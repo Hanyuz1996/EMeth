@@ -9,7 +9,9 @@ load('./data/nu0example.RData') #nu0: true methylation of unknown cell type
 load('./data/Yexample.RData') #Y: sample methylation
 load('./data/mixexample.RData') #rho.true: true proportion of each cell type
 penalty= (dim(mu)[1])*(10^seq(-2,1,0.5)) 
-source('../source/_lib.R')
+source('../R/utils.R')
+source('../R/cv.emeth.R')
+source('../R/emeth.R')
 cellTypes = colnames(mu)
 
 # run EMeth  

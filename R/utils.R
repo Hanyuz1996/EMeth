@@ -324,10 +324,13 @@ deconvEM_CV <-
       nu0test <- rep(0,length(testind))
       
       for(j in 1:length(nu)){
-        #  print('In cross validation')
+        print('In cross validation')
+        if(verbose){
+          cat("penalty parameter", nu[j])
+        }
         temp   <- deconvEM(Y_train,eta_train,mu_train,aber,V, 
                            ,pi_a_train,rho_init_train,nu0_init_train,
-                           sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
+                           sigma_c_init,lambda_init,nu=nu[j],maxiter = 10,verbose = verbose)
         rhotest<- temp$rho
         pred   <- mu_test %*% t(rhotest) 
         Y_ab     = Y_test - pred
@@ -356,7 +359,7 @@ deconvEM_CV_laplace <-
            nu, folds = 5, usesubset = TRUE, maxiter=50, verbose = FALSE){
     if(length(nu) == 1){
       result = deconvEM_laplace(Y,eta,mu,aber,V,weight = weight, pi_a_init,rho_init,nu0_init,
-                                sigma_c_init,lambda_init,nu=nu,maxiter)
+                                sigma_c_init,lambda_init,nu=nu,maxiter,verbose)
       return(list(result,nu))
     }
     
@@ -384,10 +387,13 @@ deconvEM_CV_laplace <-
       nu0test <- rep(0,length(testind))
       
       for(j in 1:length(nu)){
-        #  print('In cross validation')
+        print('In cross validation')
+        if(verbose){
+          cat("penalty parameter", nu[j])
+        }
         temp   <- deconvEM_laplace(Y_train,eta_train,mu_train,aber,V,
                                    ,pi_a_train,rho_init_train,nu0_init_train,
-                                   sigma_c_init,lambda_init,nu=nu[j],maxiter = 10)
+                                   sigma_c_init,lambda_init,nu=nu[j],maxiter = 10,verbose)
         rhotest<- temp$rho
         pred   <- mu_test %*% t(rhotest) 
         Y_ab     = Y_test - pred
