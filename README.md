@@ -18,23 +18,27 @@
   An example use:
   ```
      library("EMeth")
-     Emeth_laplace = cv.emeth(Y,eta,mu,aber = TRUE, V='c', init = 'default',
-                               family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
+     Emeth_laplace = cv.emeth(Y, eta, mu, aber = TRUE, V='c', init = 'default',
+                               family = 'laplace', nu = penalty, folds = 5, 
+                               maxiter = 50, verbose = TRUE)
   ```
-  which automatically runs the cross validation procedure and EMeth fitting with laplace . Example data are provided in the example folder. 
+where ```Y``` is the DNA methylation data matrix with rows for CpG probes and columns for samples, ```eta``` is a vector of tumor purity, and ```mu``` is reference of cell type-specific DNA methylation, with each column for one cell type. This function ```cv.emeth``` automatically runs the cross validation procedure and EMeth fitting with laplace . Example data are provided in the example folder. 
   
 ## Support
   You can contact zhanghy1996@gmail.com
   
 ## Citation
-  If you use the software, please cite the following paper. _To be added: paper link_
-  In this paper, the pipelines for simulation studies and real data analysis are contained in [this repository](https://github.com/Sun-lab/dMeth).
+  If you use the software, please cite our paper: Zhang et al. 2021. The pipelines for simulation studies and real data analysis in this paper are contained in [this repository](https://github.com/Sun-lab/dMeth).
   
 ## Authors
   Hanyu Zhang (University of Washington)
   
   Wei Sun (Fred Hutchinson Cancer Research Center)
                               
+## Reference
+
+Zhang et al. 2021, EMeth: An EM algorithm for cell type decomposition based on DNA methylation data.
+
 
  
  
