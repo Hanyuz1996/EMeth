@@ -55,7 +55,7 @@ cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 
 }
 \value{
 
-  \item{result }{The result of EMeth algorithm using the penalty value selected by cross-validation}
+  \item{result }{The result of EMeth algorithm using the penalty value selected by cross-validation. It is a list and documentation of its entries can be found in the help file for function \code{emeth}}
   \item{choosenu }{The chosen value of nu, the penalty.}
   \item{losslist}{A matrix saving the loss for each fold and each choice of nu.}
 }
