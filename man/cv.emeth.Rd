@@ -50,26 +50,15 @@ cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 
 }
 }
 
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
 
   \item{result }{The result of EMeth algorithm using the penalty value selected by cross-validation. It is a list and documentation of its entries can be found in the help file for function \code{emeth}}
   \item{choosenu }{The chosen value of nu, the penalty.}
   \item{losslist}{A matrix saving the loss for each fold and each choice of nu.}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Hanyu Zhang
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \keyword{ methods }
 \examples{

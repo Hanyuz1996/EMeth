@@ -43,9 +43,6 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
     logic variable. If TRUE then will print additional information in iteration of EMeth.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
   \item{rho }{estimated proportion of cell types in each sample.}
   \item{sigma_c }{estimated variance.}
@@ -56,20 +53,8 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
   \item{weights}{the working weights used in the iteration of EMeth.}
   \item{iter}{Number of iterations.}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
   Hanyu Zhang 
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 ## See examples folder
