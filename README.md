@@ -19,8 +19,7 @@
   ```
      library("EMeth")
      em1 = cv.emeth(Y, eta, mu, aber = TRUE, V='c', init = 'default',
-     	family = 'laplace', nu = penalty, folds = 5, 
-	maxiter = 50, verbose = TRUE)
+     	family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
      cell_type_prop_est = em1$result$rho
   ```
 where 
