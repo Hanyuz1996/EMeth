@@ -32,7 +32,7 @@ This function ```cv.emeth``` automatically runs the cross validation procedure. 
  
 The output is a list with three elements
 
-* ```result```: The result of EMeth algorithm using the penalty value selected by cross-validation. It is a list itself. 
+* ```result```: The result of the EMeth algorithm using the penalty value selected by cross-validation. It is a list and documentation of its entries can be found in the help file for function ```emeth```. 
 * ```choosenu```: The value of the ```nu``` (the penalty) chosen by the cross-validation.
 * ```losslist```: A matrix saving the loss for each fold and each choice of ```nu```.
 
