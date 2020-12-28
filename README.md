@@ -36,7 +36,7 @@ The output is a list with three elements
 * ```choosenu```: The value of the ```nu``` (the penalty) chosen by the cross-validation.
 * ```losslist```: A matrix saving the loss for each fold and each choice of ```nu```.
 
-Most often the output of interest is ```result$rho```, which is a matrix of the cell type proportion estimates (rows for samples and columns for cell type). Another output that could be useful is ```result$gamma```, which is a matrix. The (i,j)-th entry of  ```result$gamma``` is the probability that the i-th probe in the j-th sampl is aberrant (i.e., the cell type-specific methylation is bulk sample is not consistent with those in reference).
+Most often the output of interest is ```result$rho```, which is a matrix of the cell type proportion estimates (rows for samples and columns for cell type). Another output that could be useful is ```result$gamma```, which is a matrix. The (i,j)-th entry of  ```result$gamma``` is the probability that the i-th probe in the j-th sample is aberrant (i.e., the cell type-specific methylation is the j-th bulk sample is not consistent with those in cell type-specific reference).
 
 
 ## Support
