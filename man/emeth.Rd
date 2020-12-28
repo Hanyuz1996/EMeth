@@ -52,9 +52,9 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
   \item{lambda}{estimated ratio between aberrant variance and consistent variance.}
   \item{nu0}{estimated methylation level of unknown cell type.}
   \item{pi_a}{estimated probability in each sample for probes to be aberrant.}
-  \item{gamma}{estimated probability of each probe in each sample to be aberrant}
-  \item{weights}{the weights used in the iteration of EMeth, this is not meaningful in current LaplaceEM and original Normal EM}
-  \item{iter}{Number of iterations}
+  \item{gamma}{estimated probability of each probe in each sample to be aberrant.}
+  \item{weights}{the working weights used in the iteration of EMeth.}
+  \item{iter}{Number of iterations.}
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -74,7 +74,4 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
 \examples{
 ## See examples folder
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ methods }

@@ -13,13 +13,13 @@ cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 
 %- maybe also 'usage' for other objects documented here.
 \arguments{
     \item{Y}{
-     Matrix of size K*I. Methylation of bulk sample for which the cell type decomposition is to be estimated. Y is usually a K*I matrix where K is the number of probes used and I is the number os samples. 
+     Matrix of size K*I. Methylation of bulk sample for which the cell type decomposition is to be estimated. Y is usually a K*I matrix where K is the number of probes used and I is the number of samples. 
 }
   \item{eta}{
       Vector of size I. Tumor purity of each sample. 
 }
   \item{mu}{
-      Matrix of size K*Q. Reference matrix, provided by literature. A sample reference data in the example directory is provided, that is obtained from six previous literatures. 
+      Matrix of size K*Q. Reference matrix, provided by literature. A sample reference data of immune cells is provided in the example directory. 
 }
   \item{aber}{
      Logic variable: if there is unknown aberrant cell type. 
@@ -34,7 +34,7 @@ cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 
      string: accept 'normal' or 'laplace' to specify what likelihood will be used in the algorithm.
 }
   \item{nu}{
-    a nonnegative number that stands for the penalty. 
+    nonnegative numbers that stand for the penalties, and the opitmal penalty value will be chosen by cross-validation. 
 }
   \item{folds}{
      Specify the number of folds for the cross validation.
@@ -55,8 +55,8 @@ cv.emeth(Y, eta, mu, aber, V, init = "default", nu, family = "laplace", folds = 
 }
 \value{
 
-  \item{result }{The result of EMeth algorithm after fitting the best selected parameter.}
-  \item{choosenu }{The chosen parameter of nu.}
+  \item{result }{The result of EMeth algorithm using the penalty value selected by cross-validation}
+  \item{choosenu }{The chosen value of nu, the penalty.}
   \item{losslist}{A matrix saving the loss for each fold and each choice of nu.}
 }
 \references{
@@ -71,13 +71,7 @@ Hanyu Zhang
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ methods }
 \examples{
 ## See examples folder.
 }

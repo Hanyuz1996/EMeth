@@ -351,7 +351,7 @@ deconvEM_CV <-
     result = deconvEM(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
                       sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
     
-    return(list(result,choosenu,losslist))
+    return(list(result=result,choosenu=choosenu,losslist=losslist))
   }
 deconvEM_CV_laplace <-
   function(Y,eta,mu,aber = TRUE, V = 'c', weight = matrix(1,5,5),
@@ -414,7 +414,7 @@ deconvEM_CV_laplace <-
     result = deconvEM_laplace(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
                               sigma_c_init,lambda_init,nu=choosenu,maxiter, verbose = verbose)
     
-    return(list(result,choosenu,losslist))
+    return(list(result=result,choosenu=choosenu,losslist=losslist))
   }
 
 dlaplace <-

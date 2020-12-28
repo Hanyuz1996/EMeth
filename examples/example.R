@@ -17,10 +17,12 @@ cellTypes = colnames(mu)
 # run EMeth  
 print('LaplaceEM')
 hundrediter_laplace = cv.emeth(Y,eta,mu,aber = TRUE, V='c', init = 'default',
-                               family = 'laplace', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
+                               family = 'laplace', nu = penalty, folds = 5, 
+                               maxiter = 50, verbose = TRUE)
 rho.laplace = hundrediter_laplace[[1]]$rho
 
 print('NormalEM')
 hundrediter = cv.emeth(Y,eta,mu,aber = TRUE, V='c', init = 'default',
-                       family = 'normal', nu = penalty, folds = 5, maxiter = 50, verbose = TRUE)
+                       family = 'normal', nu = penalty, folds = 5, 
+                       maxiter = 50, verbose = TRUE)
 rho.normal = hundrediter[[1]]$rho
