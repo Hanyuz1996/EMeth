@@ -32,11 +32,13 @@ This function ```cv.emeth``` automatically runs the cross validation procedure. 
  
 The output is a list with three elements
 
-* ```result```: The result of the EMeth algorithm using the penalty value selected by cross-validation. It is a list and documentation of its entries can be found in the help file for function ```emeth```. 
+* ```result```: The result of the EMeth algorithm using the penalty value selected by cross-validation. It is a list and documentation of its entries can be found in the help file for function ```emeth```. The following entries of ```result``` may be 
+of interest. 
+	+ ```rho```: a matrix of the cell type proportion estimates (rows for samples and columns for cell type)
+	+ ```gamma```: a matrix whose (i,j)-th entry is the probability that the i-th probe in the j-th sample is aberrant (i.e., the DNA methylation is the j-th bulk sample is not consistent with the deconvolution model and the cell type-specific methylation reference). This matrix could be used by other methods to select the set of CpG probes to be used for deconvolution.
+	+ ```nu0```: estimates of DNA methylation in the special cell type without reference, i.e., tumor cells in bulk tumor samples that include tumor cells as other cell types such as tumor-infiltrated immune cells.  
 * ```choosenu```: The value of the ```nu``` (the penalty) chosen by the cross-validation.
 * ```losslist```: A matrix saving the loss for each fold and each choice of ```nu```.
-
-Most often the output of interest is ```result$rho```, which is a matrix of the cell type proportion estimates (rows for samples and columns for cell type). Another output that could be useful is ```result$gamma```, which is a matrix. The (i,j)-th entry of  ```result$gamma``` is the probability that the i-th probe in the j-th sample is aberrant (i.e., the cell type-specific methylation is the j-th bulk sample is not consistent with those in cell type-specific reference).
 
 
 ## Support

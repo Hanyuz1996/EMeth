@@ -48,7 +48,7 @@ emeth(Y, eta, mu, aber, V, init = "default", family = "laplace", nu = 0, maxiter
   \item{sigma_c }{estimated variance.}
   \item{lambda}{estimated ratio between aberrant variance and consistent variance.}
   \item{nu0}{estimated methylation level of unknown cell type.}
-  \item{pi_a}{estimated probability in each sample for probes to be aberrant.}
+  \item{pi_a}{estimates of the proportion of aberrant probes in each sample.}
   \item{gamma}{estimated probability of each probe in each sample to be aberrant.}
   \item{weights}{the working weights used in the iteration of EMeth.}
   \item{iter}{Number of iterations.}
