@@ -22,7 +22,12 @@
                                family = 'laplace', nu = penalty, folds = 5, 
                                maxiter = 50, verbose = TRUE)
   ```
-where ```Y``` is the DNA methylation data matrix with rows for CpG probes and columns for samples, ```eta``` is a vector of tumor purity, and ```mu``` is reference of cell type-specific DNA methylation, with each column for one cell type. This function ```cv.emeth``` automatically runs the cross validation procedure and EMeth fitting with laplace . Example data are provided in the example folder. 
+where `
+* ``Y``` is the DNA methylation data matrix with rows for CpG probes and columns for samples, 
+* ```eta``` is a vector of tumor purity that can be set as 0 for non-tumor studies, and 
+* ```mu``` is the reference data for cell type-specific DNA methylation, with each column for one cell type. 
+
+This function ```cv.emeth``` automatically runs the cross validation procedure. Please see the help document for this function ```?cv.emeth``` for more details of these and other parameters. Example data are provided in the example folder. 
   
 ## Support
   You can contact zhanghy1996@gmail.com
