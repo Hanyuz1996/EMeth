@@ -26,8 +26,8 @@ function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
       stop("Must specify the family from laplace or normal!")
     }
     
-    if(max(result$pi_a > 0.8)){
-      warning("maximum proportion of aberrant probes is large, suggesting inappropriate references\n")
+    if(median(result$pi_a > 0.5)){
+      warning("median proportion of aberrant probes is large, suggesting inappropriate references\n")
     }
     
     return(result)
