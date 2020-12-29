@@ -15,9 +15,9 @@ function(Y,eta,mu,aber,V, init = 'default', nu, family = 'laplace',
   lambda_init = initlist$lambda_init
   
   if(family == 'laplace'){
-  result = deconvEM_CV_laplace(Y,eta,mu,aber = aber, V = 'c', weight,
-                               pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
-                               nu, folds, usesubset, maxiter, verbose = verbose)
+    result = deconvEM_CV_laplace(Y,eta,mu,aber = aber, V = 'c', weight,
+                                 pi_a_init, rho_init, nu0_init, sigma_c_init, lambda_init,
+                                 nu, folds, usesubset, maxiter, verbose = verbose)
   }
   else if(family == 'normal'){
     result = deconvEM_CV(Y,eta,mu,aber = aber, V = 'c', weight,
@@ -27,4 +27,10 @@ function(Y,eta,mu,aber,V, init = 'default', nu, family = 'laplace',
   else{
     stop("Must specify the family from laplace or normal!")
   }
+  
+  if(max(result[[1]]$pi_a > 0.8)){
+    warning("maximum proportion of aberrant probes is large, suggesting inappropriate references\n")
+  }
+  
+  return(result)
 }

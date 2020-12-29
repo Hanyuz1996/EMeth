@@ -17,14 +17,19 @@ function(Y,eta,mu,aber,V, init = 'default', family = 'laplace',
     if(family == 'laplace'){
       result = deconvEM_laplace(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
                         sigma_c_init,lambda_init,nu=nu, maxiter = maxiter, verbose = verbose)
-      return(result)
     }
     else if(family == 'normal'){
       result = deconvEM(Y,eta,mu,aber,V,weight = weight,pi_a_init,rho_init,nu0_init,
                         sigma_c_init,lambda_init,nu=nu, maxiter = maxiter, verbose = verbose)
-      return(result)
     }
     else{
       stop("Must specify the family from laplace or normal!")
     }
+    
+    if(max(result$pi_a > 0.8)){
+      warning("maximum proportion of aberrant probes is large, suggesting inappropriate references\n")
+    }
+    
+    return(result)
+    
 }
